@@ -167,10 +167,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# ----------------------------------------
-# Pie de página señorial
-# ----------------------------------------
-st.markdown("---")
-st.markdown("👑 Desarrollado por la Corte de Datos 2025")```
-
