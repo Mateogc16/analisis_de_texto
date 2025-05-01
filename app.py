@@ -4,26 +4,61 @@ from textblob import TextBlob
 import re
 from googletrans import Translator
 
-# Configuración de la página
+# Configuración de la página con detalles visuales de realeza
 st.set_page_config(
-    page_title="Analizador de Texto Simple",
-    page_icon="📊",
+    page_title="📜 Analizador de Texto - El Reino",
+    page_icon="🏰",
     layout="wide"
 )
 
 # Título y descripción
-st.title("📝 Analizador de Texto con TextBlob")
+st.title("📝 Analizador de Texto del Reino Real")
 st.markdown("""
-Esta aplicación utiliza TextBlob para realizar un análisis básico de texto:
+Este es un analizador de texto, digno de un gran castillo, para comprender el sentimiento y la subjetividad de las palabras de nuestros súbditos y aliados:
 - Análisis de sentimiento y subjetividad
 - Extracción de palabras clave
 - Análisis de frecuencia de palabras
-""")
+""", unsafe_allow_html=True)
 
-# Barra lateral
-st.sidebar.title("Opciones")
+# Estilo de la página (burguesía y castillo)
+st.markdown("""
+    <style>
+        .reportview-container {
+            background-color: #F5E1A4;  /* Dorado suave */
+        }
+        .sidebar .sidebar-content {
+            background-color: #6A1B9A;  /* Morado real */
+            color: #ffffff;
+            font-family: 'Georgia', serif;
+        }
+        .title {
+            font-family: 'Georgia', serif;
+            color: #6A1B9A;
+        }
+        .markdown-text-container {
+            font-family: 'Georgia', serif;
+            color: #4A148C;
+        }
+        .stButton>button {
+            background-color: #6A1B9A;
+            color: white;
+            font-family: 'Georgia', serif;
+            font-size: 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .stTextArea>div>textarea {
+            background-color: #F5E1A4;  /* Fondo dorado */
+            color: #6A1B9A;  /* Texto morado */
+            font-family: 'Georgia', serif;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# Barra lateral con opciones de realeza
+st.sidebar.title("Opciones Nobles")
 modo = st.sidebar.selectbox(
-    "Selecciona el modo de entrada:",
+    "Seleccione el modo de entrada:",
     ["Texto directo", "Archivo de texto"]
 )
 
@@ -84,18 +119,6 @@ def contar_palabras(texto):
     
     return contador_ordenado, palabras_filtradas
 
-# Inicializar el traductor
-translator = Translator()
-
-# Función para traducir texto del español al inglés
-def traducir_texto(texto):
-    try:
-        traduccion = translator.translate(texto, src='es', dest='en')
-        return traduccion.text
-    except Exception as e:
-        st.error(f"Error al traducir: {e}")
-        return texto  # Devolver el texto original si falla la traducción
-
 # Función para procesar el texto con TextBlob (versión con traducción)
 def procesar_texto(texto):
     # Guardar el texto original
@@ -114,155 +137,3 @@ def procesar_texto(texto):
     # Extraer frases de manera simplificada (del texto original)
     frases_originales = [frase.strip() for frase in re.split(r'[.!?]+', texto_original) if frase.strip()]
     
-    # Extraer frases del texto traducido
-    frases_traducidas = [frase.strip() for frase in re.split(r'[.!?]+', texto_ingles) if frase.strip()]
-    
-    # Combinar frases originales y traducidas
-    frases_combinadas = []
-    for i in range(min(len(frases_originales), len(frases_traducidas))):
-        frases_combinadas.append({
-            "original": frases_originales[i],
-            "traducido": frases_traducidas[i]
-        })
-    
-    # Contar palabras con nuestra función simplificada (en el texto traducido)
-    contador_palabras, palabras = contar_palabras(texto_ingles)
-    
-    return {
-        "sentimiento": sentimiento,
-        "subjetividad": subjetividad,
-        "frases": frases_combinadas,
-        "contador_palabras": contador_palabras,
-        "palabras": palabras,
-        "texto_original": texto_original,
-        "texto_traducido": texto_ingles
-    }
-
-# Función para crear visualizaciones usando componentes nativos de Streamlit
-def crear_visualizaciones(resultados):
-    col1, col2 = st.columns(2)
-    
-    # Visualización de sentimiento y subjetividad con barras de progreso de Streamlit
-    with col1:
-        st.subheader("Análisis de Sentimiento y Subjetividad")
-        
-        # Normalizar valores para mostrarlos en barras de progreso
-        # Sentimiento va de -1 a 1, lo normalizamos a 0-1 para la barra
-        sentimiento_norm = (resultados["sentimiento"] + 1) / 2
-        
-        st.write("**Sentimiento:**")
-        st.progress(sentimiento_norm)
-        
-        if resultados["sentimiento"] > 0.05:
-            st.success(f"📈 Positivo ({resultados['sentimiento']:.2f})")
-        elif resultados["sentimiento"] < -0.05:
-            st.error(f"📉 Negativo ({resultados['sentimiento']:.2f})")
-        else:
-            st.info(f"📊 Neutral ({resultados['sentimiento']:.2f})")
-        
-        # Subjetividad ya está en el rango 0-1
-        st.write("**Subjetividad:**")
-        st.progress(resultados["subjetividad"])
-        
-        if resultados["subjetividad"] > 0.5:
-            st.warning(f"💭 Alta subjetividad ({resultados['subjetividad']:.2f})")
-        else:
-            st.info(f"📋 Baja subjetividad ({resultados['subjetividad']:.2f})")
-    
-    # Palabras más frecuentes usando chart de Streamlit
-    with col2:
-        st.subheader("Palabras más frecuentes")
-        if resultados["contador_palabras"]:
-            palabras_top = dict(list(resultados["contador_palabras"].items())[:10])
-            st.bar_chart(palabras_top)
-    
-    # Mostrar texto traducido
-    st.subheader("Texto Traducido")
-    with st.expander("Ver traducción completa"):
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("**Texto Original (Español):**")
-            st.text(resultados["texto_original"])
-        with col2:
-            st.markdown("**Texto Traducido (Inglés):**")
-            st.text(resultados["texto_traducido"])
-    
-    # Análisis de frases
-    st.subheader("Frases detectadas")
-    if resultados["frases"]:
-        for i, frase_dict in enumerate(resultados["frases"][:10], 1):
-            frase_original = frase_dict["original"]
-            frase_traducida = frase_dict["traducido"]
-            
-            try:
-                blob_frase = TextBlob(frase_traducida)
-                sentimiento = blob_frase.sentiment.polarity
-                
-                if sentimiento > 0.05:
-                    emoji = "😊"
-                elif sentimiento < -0.05:
-                    emoji = "😟"
-                else:
-                    emoji = "😐"
-                
-                st.write(f"{i}. {emoji} **Original:** *\"{frase_original}\"*")
-                st.write(f"   **Traducción:** *\"{frase_traducida}\"* (Sentimiento: {sentimiento:.2f})")
-                st.write("---")
-            except:
-                st.write(f"{i}. **Original:** *\"{frase_original}\"*")
-                st.write(f"   **Traducción:** *\"{frase_traducida}\"*")
-                st.write("---")
-    else:
-        st.write("No se detectaron frases.")
-
-# Lógica principal según el modo seleccionado
-if modo == "Texto directo":
-    st.subheader("Ingresa tu texto para analizar")
-    texto = st.text_area("", height=200, placeholder="Escribe o pega aquí el texto que deseas analizar...")
-    
-    if st.button("Analizar texto"):
-        if texto.strip():
-            with st.spinner("Analizando texto..."):
-                resultados = procesar_texto(texto)
-                crear_visualizaciones(resultados)
-        else:
-            st.warning("Por favor, ingresa algún texto para analizar.")
-
-elif modo == "Archivo de texto":
-    st.subheader("Carga un archivo de texto")
-    archivo = st.file_uploader("", type=["txt", "csv", "md"])
-    
-    if archivo is not None:
-        try:
-            contenido = archivo.getvalue().decode("utf-8")
-            with st.expander("Ver contenido del archivo"):
-                st.text(contenido[:1000] + ("..." if len(contenido) > 1000 else ""))
-            
-            if st.button("Analizar archivo"):
-                with st.spinner("Analizando archivo..."):
-                    resultados = procesar_texto(contenido)
-                    crear_visualizaciones(resultados)
-        except Exception as e:
-            st.error(f"Error al procesar el archivo: {e}")
-
-# Información adicional
-with st.expander("📚 Información sobre el análisis"):
-    st.markdown("""
-    ### Sobre el análisis de texto
-    
-    - **Sentimiento**: Varía de -1 (muy negativo) a 1 (muy positivo)
-    - **Subjetividad**: Varía de 0 (muy objetivo) a 1 (muy subjetivo)
-    
-    ### Requisitos mínimos
-    
-    Esta aplicación utiliza únicamente:
-    ```
-    streamlit
-    textblob
-    pandas
-    ```
-    """)
-
-# Pie de página
-st.markdown("---")
-st.markdown("Desarrollado con ❤️ usando Streamlit y TextBlob")
